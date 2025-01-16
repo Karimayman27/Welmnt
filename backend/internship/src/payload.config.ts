@@ -6,6 +6,9 @@ import { buildConfig } from 'payload';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import express, { Request, Response } from 'express'; // Import express types
+import cors from 'cors';
+
+
 
 import { Users } from './collections/Users';
 import { Media } from './collections/Media';
@@ -14,7 +17,8 @@ import Authors from './collections/Authors';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-
+const app = express();
+app.use(cors()); 
 export default buildConfig({
   admin: {
     user: Users.slug,

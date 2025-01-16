@@ -120,6 +120,7 @@ export interface Post {
     [k: string]: unknown;
   };
   coverImage: string | Media;
+  author: string | Author;
   publishDate: string;
   updatedAt: string;
   createdAt: string;
@@ -242,6 +243,7 @@ export interface PostsSelect<T extends boolean = true> {
   title?: T;
   body?: T;
   coverImage?: T;
+  author?: T;
   publishDate?: T;
   updatedAt?: T;
   createdAt?: T;

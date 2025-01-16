@@ -1,9 +1,9 @@
-
 import { CollectionConfig } from 'payload';
+
 const Posts: CollectionConfig = {
   slug: 'posts',
   admin: {
-    defaultColumns: ['title', 'publishDate'],
+    defaultColumns: ['title', 'author', 'publishDate'],
     useAsTitle: 'title',
   },
   fields: [
@@ -21,6 +21,12 @@ const Posts: CollectionConfig = {
       name: 'coverImage',
       type: 'upload',
       relationTo: 'media', // Ensure the Media collection exists
+      required: true,
+    },
+    {
+      name: 'author',
+      type: 'relationship', // Relationship field
+      relationTo: 'authors', // The slug of the Authors collection
       required: true,
     },
     {
