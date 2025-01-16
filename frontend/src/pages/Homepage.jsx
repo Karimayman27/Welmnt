@@ -11,7 +11,7 @@ const HomePage = () => {
         const fetchPosts = async () => {
             try {
                 const response = await axios.get('http://localhost:3000/api/posts');
-                setPosts(response.data.data); // Extract the posts from the response
+                setPosts(response.data.data);
             } catch (err) {
                 setError('Failed to fetch posts. Please try again later.');
             } finally {
