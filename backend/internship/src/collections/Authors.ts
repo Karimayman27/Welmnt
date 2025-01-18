@@ -6,6 +6,12 @@ const Authors: CollectionConfig = {
     defaultColumns: ['name'],
     useAsTitle: 'name',
   },
+  access: {
+    create: () => true, // Allow anyone to create posts
+    read: () => true,   // Allow anyone to read posts
+    update: () => true, // Allow anyone to update posts
+    delete: () => true, // Allow anyone to delete posts
+  },
   fields: [
     {
       name: 'name',

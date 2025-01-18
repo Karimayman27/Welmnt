@@ -6,6 +6,12 @@ const Posts: CollectionConfig = {
     defaultColumns: ['title', 'author', 'publishDate'],
     useAsTitle: 'title',
   },
+  access: {
+    create: () => true, 
+    read: () => true,   
+    update: () => true, 
+    delete: () => true, 
+  },
   fields: [
     {
       name: 'title',

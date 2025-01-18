@@ -19,7 +19,6 @@
     "@payloadcms/next": "^3.17.1",
     "@payloadcms/payload-cloud": "latest",
     "@payloadcms/richtext-lexical": "latest",
-    "@types/express": "^5.0.0",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "express": "^4.21.2",
@@ -33,6 +32,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.5.4",
     "@types/react": "19.0.1",
     "@types/react-dom": "19.0.1",

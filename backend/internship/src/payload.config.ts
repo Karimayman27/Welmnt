@@ -5,20 +5,16 @@ import path from 'path';
 import { buildConfig } from 'payload';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
-import express, { Request, Response } from 'express'; // Import express types
-import cors from 'cors';
-
-
-
 import { Users } from './collections/Users';
 import { Media } from './collections/Media';
 import Posts from './collections/Posts';
 import Authors from './collections/Authors';
+import express, { Request, Response, NextFunction } from 'express';
+
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-const app = express();
-app.use(cors()); 
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -26,7 +22,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Posts, Authors],
+  collections: [Users, Media, Posts, Authors], // Define your collections
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -36,28 +32,32 @@ export default buildConfig({
     url: process.env.DATABASE_URI || '',
   }),
   sharp,
-  plugins: [
-    payloadCloudPlugin(),
-    // storage-adapter-placeholder
-  ],
+  plugins: [payloadCloudPlugin()],
   onInit: async (payload) => {
-    // Create an express app instance explicitly
     const app = express();
 
-    // Custom API endpoint to fetch all published posts along with authors
+    // CORS middleware
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      next();
+    });
+
+    // Custom API endpoint for posts
     app.get('/api/posts', async (req: Request, res: Response) => {
       const { page = 1, limit = 10 } = req.query;
 
       try {
-        // Fetch all published posts with pagination
         const posts = await payload.find({
-          collection: 'posts',
+          collection: 'posts', // Posts collection slug
           where: {
             publishDate: {
-              less_than_equal: new Date().toISOString(), // Fetch posts published till now
+              less_than_equal: new Date().toISOString(), // Fetch published posts till now
             },
           },
-          depth: 1, // Include related author details
+          depth: 1,
           limit: parseInt(limit as string, 10),
           page: parseInt(page as string, 10),
         });
@@ -72,22 +72,13 @@ export default buildConfig({
             limit: posts.limit,
           },
         });
-      } catch (error: unknown) {
-        // Type the error as 'any' or more specifically
-        if (error instanceof Error) {
-          res.status(500).json({
-            success: false,
-            message: 'Failed to fetch posts.',
-            error: error.message,
-          });
-        } else {
-          res.status(500).json({
-            success: false,
-            message: 'Unknown error occurred.',
-          });
-        }
+      } catch (error: any) {
+        res.status(500).json({
+          success: false,
+          message: 'Failed to fetch posts.',
+          error: error.message,
+        });
       }
     });
-
   },
 });
