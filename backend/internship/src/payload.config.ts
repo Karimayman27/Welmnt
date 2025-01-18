@@ -10,7 +10,7 @@ import { Media } from './collections/Media';
 import Posts from './collections/Posts';
 import Authors from './collections/Authors';
 import express, { Request, Response, NextFunction } from 'express';
-
+import cors from 'cors';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -35,50 +35,58 @@ export default buildConfig({
   plugins: [payloadCloudPlugin()],
   onInit: async (payload) => {
     const app = express();
-
-    // CORS middleware
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
-      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      next();
-    });
+    app.use('/uploads', express.static(path.resolve(dirname, 'uploads')));
+    // Use CORS middleware
+    app.use(cors({
+      origin: '*', // Or specify your frontend URL for more security
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }));
+    
 
     // Custom API endpoint for posts
-    app.get('/api/posts', async (req: Request, res: Response) => {
-      const { page = 1, limit = 10 } = req.query;
+   app.get('/api/posts', async (req: Request, res: Response) => {
+    const { page = 1, limit = 10 } = req.query;
 
-      try {
+    try {
         const posts = await payload.find({
-          collection: 'posts', // Posts collection slug
-          where: {
-            publishDate: {
-              less_than_equal: new Date().toISOString(), // Fetch published posts till now
+            collection: 'posts',
+            where: {
+                publishDate: {
+                    less_than_equal: new Date().toISOString(),
+                },
             },
-          },
-          depth: 1,
-          limit: parseInt(limit as string, 10),
-          page: parseInt(page as string, 10),
+            depth: 1,
+            limit: parseInt(limit as string, 10),
+            page: parseInt(page as string, 10),
         });
+
+        // Add full URLs for cover images
+        const dataWithImageUrls = posts.docs.map((post: any) => ({
+            ...post,
+            coverImage: post.coverImage
+                ? `http://localhost:3000/uploads/${post.coverImage}`
+                : null, // Replace with your media hosting logic
+        }));
 
         res.status(200).json({
-          success: true,
-          data: posts.docs,
-          pagination: {
-            totalDocs: posts.totalDocs,
-            totalPages: posts.totalPages,
-            page: posts.page,
-            limit: posts.limit,
-          },
+            success: true,
+            data: dataWithImageUrls,
+            pagination: {
+                totalDocs: posts.totalDocs,
+                totalPages: posts.totalPages,
+                page: posts.page,
+                limit: posts.limit,
+            },
         });
-      } catch (error: any) {
+    } catch (error: any) {
         res.status(500).json({
-          success: false,
-          message: 'Failed to fetch posts.',
-          error: error.message,
+            success: false,
+            message: 'Failed to fetch posts.',
+            error: error.message,
         });
-      }
-    });
-  },
+    }
+});
+
+  },
 });
